@@ -7,10 +7,14 @@ public class BSTreeNode<E>
 	private BSTreeNode<E> right;
 	private E value;
 	
+	//constructor 
 	public BSTreeNode(E value) {
 	    this.value = value;
 	}
 	
+	
+	
+	//getters
 	public E getValue() {
 		return value; 
 	}
@@ -25,5 +29,19 @@ public class BSTreeNode<E>
 	
 	public BSTreeNode<E> getParent() {
 		return parent;
+	}
+	
+	
+	//setters
+	public void setLeft(BSTreeNode<E> left) {
+	    this.left = left;
+	}
+
+	public void setRight(BSTreeNode<E> right) {
+	    this.right = right;
+	}
+
+	public void setParent(BSTreeNode<E> parent) {
+	    this.parent = parent;
 	}
 }

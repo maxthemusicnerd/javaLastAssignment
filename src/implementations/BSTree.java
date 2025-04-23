@@ -3,13 +3,15 @@ package implementations;
 import utilities.BSTreeADT;
 import utilities.Iterator;
 
-public class BSTree<E extends Comparable<? super E>> implements BSTreeADT
+public class BSTree<E extends Comparable<? super E>> implements BSTreeADT<E>
 {
 
+	private BSTreeNode<E> root;
+	private int size = 0;
+	
 	@Override
 	public BSTreeNode getRoot() throws NullPointerException {
-		
-		return null;
+		return root;
 	}
 
 	@Override
@@ -20,19 +22,21 @@ public class BSTree<E extends Comparable<? super E>> implements BSTreeADT
 
 	@Override
 	public int size() {
-		// TODO Auto-generated method stub
-		return 0;
+		return size;
 	}
 
 	@Override
 	public boolean isEmpty() {
-		// TODO Auto-generated method stub
+		if (root != null) {
+			return true;
+		}
+		
 		return false;
-	}
+	}	
 
 	@Override
 	public void clear() {
-		// TODO Auto-generated method stub
+		root = null;
 		
 	}
 
@@ -49,8 +53,46 @@ public class BSTree<E extends Comparable<? super E>> implements BSTreeADT
 	}
 
 	@Override
-	public boolean add(Comparable newEntry) throws NullPointerException {
-		// TODO Auto-generated method stub
+	public boolean add(E newEntry) throws NullPointerException {
+		
+		if (root == null) {
+	        root = new BSTreeNode<>(newEntry);
+	        size++;
+	        return true;
+	    }
+		
+		BSTreeNode<E> currentNode = root;
+		
+		boolean isAdded = false;
+		
+		while (isAdded == false) {
+			int cmp = newEntry.compareTo(currentNode.getValue());
+			if (cmp < 0) {
+				BSTreeNode<E> left = currentNode.getLeft();
+				if (left == null) {
+					BSTreeNode<E> newNode = new BSTreeNode<E>(newEntry);
+					currentNode.setLeft(newNode);
+					size++
+					return true;
+				} else {
+					currentNode = left;
+				}
+			} else if (cmp > 0) {
+				BSTreeNode<E> right = currentNode.getRight();
+				if (right == null) {
+					BSTreeNode<E> newNode = new BSTreeNode<E>(newEntry);
+					currentNode.setRight(newNode);
+					size++;
+					return true;
+				} else {
+					currentNode = right;
+				}
+			} else {
+				//if the value is identical then we cannot add 
+				return false;
+			}
+		}
+		
 		return false;
 	}
 
