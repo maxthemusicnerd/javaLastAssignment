@@ -16,8 +16,18 @@ public class BSTree<E extends Comparable<? super E>> implements BSTreeADT<E>
 
 	@Override
 	public int getHeight() {
-		// TODO Auto-generated method stub
-		return 0;
+		return getHeightHelper(root);
+	}
+	
+	private int getHeightHelper(BSTreeNode<E> node) {
+	    if (node == null) {
+	        return -1; 
+	    }
+
+	    int leftHeight = getHeightHelper(node.getLeft());
+	    int rightHeight = getHeightHelper(node.getRight());
+
+	    return 1 + Math.max(leftHeight, rightHeight);
 	}
 
 	@Override
@@ -41,19 +51,50 @@ public class BSTree<E extends Comparable<? super E>> implements BSTreeADT<E>
 	}
 
 	@Override
-	public boolean contains(Comparable entry) throws NullPointerException {
-		// TODO Auto-generated method stub
+	public boolean contains(E entry) throws NullPointerException {
+		
+		if (entry == null) throw new NullPointerException("Entry cannot be null.");
+		
+		BSTreeNode<E> searchResult = searcherHelper(root, entry);
+		if (searchResult == entry) {
+			return true;
+		} 
 		return false;
 	}
 
 	@Override
-	public BSTreeNode search(Comparable entry) throws NullPointerException {
-		// TODO Auto-generated method stub
-		return null;
+	public BSTreeNode<E> search(E entry) throws NullPointerException {
+		
+		if (entry == null) throw new NullPointerException("Entry cannot be null.");
+		
+		BSTreeNode<E> searchResult = searcherHelper(root, entry);
+		return searchResult;
 	}
+	
+	
+	private BSTreeNode<E> searcherHelper(BSTreeNode<E> node, E entry) {
+	    if (node == null) {
+	        return null;
+	    }
+
+	    int cmp = entry.compareTo(node.getValue());
+	    
+	    if (cmp < 0) {
+	        return searcherHelper(node.getLeft(), entry);
+	    } else if (cmp > 0) {
+	        return searcherHelper(node.getRight(), entry);
+	    } else {
+	        return node;
+	    }
+	}
+	
+	
+	
 
 	@Override
 	public boolean add(E newEntry) throws NullPointerException {
+		
+		if (newEntry == null) throw new NullPointerException("Entry cannot be null.");
 		
 		if (root == null) {
 	        root = new BSTreeNode<>(newEntry);
@@ -72,7 +113,7 @@ public class BSTree<E extends Comparable<? super E>> implements BSTreeADT<E>
 				if (left == null) {
 					BSTreeNode<E> newNode = new BSTreeNode<E>(newEntry);
 					currentNode.setLeft(newNode);
-					size++
+					size++;
 					return true;
 				} else {
 					currentNode = left;
@@ -97,15 +138,41 @@ public class BSTree<E extends Comparable<? super E>> implements BSTreeADT<E>
 	}
 
 	@Override
-	public BSTreeNode removeMin() {
-		// TODO Auto-generated method stub
-		return null;
+	public BSTreeNode<E> removeMin() {
+		
+		boolean minNotFound = true;
+		
+		BSTreeNode<E> currentNode = root;
+		
+		while (minNotFound) {
+			BSTreeNode<E> left = currentNode.getLeft();
+			if (left != null) {
+				currentNode = left;
+			} else {
+				minNotFound = false;
+			}
+		}
+		
+		return currentNode;
 	}
 
 	@Override
 	public BSTreeNode removeMax() {
-		// TODO Auto-generated method stub
-		return null;
+		
+		boolean maxNotFound = true;
+		
+		BSTreeNode<E> currentNode = root;
+		
+		while (maxNotFound) {
+			BSTreeNode<E> right = currentNode.getRight();
+			if (right != null) {
+				currentNode = right;
+			} else {
+				maxNotFound = false;
+			}
+		}
+		
+		return currentNode;
 	}
 
 	@Override
