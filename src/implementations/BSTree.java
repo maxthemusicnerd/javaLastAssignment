@@ -152,12 +152,13 @@ public class BSTree<E extends Comparable<? super E>> implements BSTreeADT<E>
 				minNotFound = false;
 			}
 		}
-		
+		size--;
+		currentNode.getParent().setLeft(null);
 		return currentNode;
 	}
 
 	@Override
-	public BSTreeNode removeMax() {
+	public BSTreeNode<E> removeMax() {
 		
 		boolean maxNotFound = true;
 		
@@ -171,24 +172,25 @@ public class BSTree<E extends Comparable<? super E>> implements BSTreeADT<E>
 				maxNotFound = false;
 			}
 		}
-		
+		size--;
+		currentNode.getParent().setRight(null);
 		return currentNode;
 	}
 
 	@Override
-	public Iterator inorderIterator() {
+	public Iterator<E> inorderIterator() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Iterator preorderIterator() {
+	public Iterator<E> preorderIterator() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Iterator postorderIterator() {
+	public Iterator<E> postorderIterator() {
 		// TODO Auto-generated method stub
 		return null;
 	}
