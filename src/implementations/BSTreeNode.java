@@ -15,7 +15,7 @@ public class BSTreeNode<E>
 	
 	
 	//getters
-	public E getValue() {
+	public E getElement() {
 		return value; 
 	}
 	

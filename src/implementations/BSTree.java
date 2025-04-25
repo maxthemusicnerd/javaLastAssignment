@@ -1,16 +1,32 @@
 package implementations;
 
 import utilities.BSTreeADT;
+
 import utilities.Iterator;
 
 public class BSTree<E extends Comparable<? super E>> implements BSTreeADT<E>
 {
+	
 
 	private BSTreeNode<E> root;
 	private int size = 0;
 	
+	public BSTree() {
+        this.root = null;
+        this.size = 0;
+    }
+	
+	public BSTree(E rootNode) {
+		BSTreeNode<E> newNode = new BSTreeNode<E>(rootNode);
+		this.size = 1;
+		this.root = newNode;
+	}
+	
 	@Override
-	public BSTreeNode getRoot() throws NullPointerException {
+	public BSTreeNode<E> getRoot() throws NullPointerException {
+		if (root == null) {
+			throw new NullPointerException("Tree root is null");
+		}
 		return root;
 	}
 
@@ -21,7 +37,7 @@ public class BSTree<E extends Comparable<? super E>> implements BSTreeADT<E>
 	
 	private int getHeightHelper(BSTreeNode<E> node) {
 	    if (node == null) {
-	        return -1; 
+	        return 0; 
 	    }
 
 	    int leftHeight = getHeightHelper(node.getLeft());
@@ -37,7 +53,7 @@ public class BSTree<E extends Comparable<? super E>> implements BSTreeADT<E>
 
 	@Override
 	public boolean isEmpty() {
-		if (root != null) {
+		if (root == null) {
 			return true;
 		}
 		
@@ -46,6 +62,7 @@ public class BSTree<E extends Comparable<? super E>> implements BSTreeADT<E>
 
 	@Override
 	public void clear() {
+		size = 0;
 		root = null;
 		
 	}
@@ -55,11 +72,7 @@ public class BSTree<E extends Comparable<? super E>> implements BSTreeADT<E>
 		
 		if (entry == null) throw new NullPointerException("Entry cannot be null.");
 		
-		BSTreeNode<E> searchResult = searcherHelper(root, entry);
-		if (searchResult == entry) {
-			return true;
-		} 
-		return false;
+		return searcherHelper(root, entry) != null;
 	}
 
 	@Override
@@ -77,7 +90,7 @@ public class BSTree<E extends Comparable<? super E>> implements BSTreeADT<E>
 	        return null;
 	    }
 
-	    int cmp = entry.compareTo(node.getValue());
+	    int cmp = entry.compareTo(node.getElement());
 	    
 	    if (cmp < 0) {
 	        return searcherHelper(node.getLeft(), entry);
@@ -107,12 +120,13 @@ public class BSTree<E extends Comparable<? super E>> implements BSTreeADT<E>
 		boolean isAdded = false;
 		
 		while (isAdded == false) {
-			int cmp = newEntry.compareTo(currentNode.getValue());
+			int cmp = newEntry.compareTo(currentNode.getElement());
 			if (cmp < 0) {
 				BSTreeNode<E> left = currentNode.getLeft();
 				if (left == null) {
 					BSTreeNode<E> newNode = new BSTreeNode<E>(newEntry);
 					currentNode.setLeft(newNode);
+					newNode.setParent(currentNode);
 					size++;
 					return true;
 				} else {
@@ -123,6 +137,7 @@ public class BSTree<E extends Comparable<? super E>> implements BSTreeADT<E>
 				if (right == null) {
 					BSTreeNode<E> newNode = new BSTreeNode<E>(newEntry);
 					currentNode.setRight(newNode);
+					newNode.setParent(currentNode);
 					size++;
 					return true;
 				} else {
@@ -139,60 +154,93 @@ public class BSTree<E extends Comparable<? super E>> implements BSTreeADT<E>
 
 	@Override
 	public BSTreeNode<E> removeMin() {
-		
-		boolean minNotFound = true;
-		
-		BSTreeNode<E> currentNode = root;
-		
-		while (minNotFound) {
-			BSTreeNode<E> left = currentNode.getLeft();
-			if (left != null) {
-				currentNode = left;
-			} else {
-				minNotFound = false;
-			}
-		}
-		size--;
-		currentNode.getParent().setLeft(null);
-		return currentNode;
+	    if (root == null) {
+	        return null;
+	    }
+
+	    BSTreeNode<E> current = root;
+
+	    if (current.getLeft() == null) {
+	        root = current.getRight();
+	        if (root != null) {
+	            root.setParent(null);
+	        }
+	        size--;
+	        return current;
+	    }
+
+	    while (current.getLeft() != null) {
+	        current = current.getLeft();
+	    }
+
+	    BSTreeNode<E> parent = current.getParent();
+	    BSTreeNode<E> rightChild = current.getRight();
+
+	    if (parent != null) {
+	        parent.setLeft(rightChild);
+	        if (rightChild != null) {
+	            rightChild.setParent(parent);
+	        }
+	    }
+
+	    size--;
+	    return current;
 	}
+
+	
+	//Like why do u wanna remove max tho, max is so cool 
 
 	@Override
 	public BSTreeNode<E> removeMax() {
-		
-		boolean maxNotFound = true;
-		
-		BSTreeNode<E> currentNode = root;
-		
-		while (maxNotFound) {
-			BSTreeNode<E> right = currentNode.getRight();
-			if (right != null) {
-				currentNode = right;
-			} else {
-				maxNotFound = false;
-			}
-		}
-		size--;
-		currentNode.getParent().setRight(null);
-		return currentNode;
-	}
+	    if (root == null) {
+	        return null;
+	    }
 
+	    BSTreeNode<E> currentNode = root;
+
+	    while (currentNode.getRight() != null) {
+	        currentNode = currentNode.getRight();
+	    }
+
+	    if (currentNode.getLeft() != null) {
+	        if (currentNode.getParent() != null) {
+	            currentNode.getParent().setRight(currentNode.getLeft());
+	            currentNode.getLeft().setParent(currentNode.getParent());
+	        } else {
+	            root = currentNode.getLeft();
+	            root.setParent(null);
+	        }
+	    } else {
+	        if (currentNode.getParent() != null) {
+	            currentNode.getParent().setRight(null);
+	        } else {
+	            root = null;
+	        }
+	    }
+
+	    size--;
+	    return currentNode;
+	}
+	
+	
+	//Hello!!! For all of these I'm assuming when you want to grab something, you want to grab the value, not the node itself!! If you actually want the NODE
+	//and not the VALUE please change the code in the three classes PostOrderIterator, PreOrderIterator, and InOrderIterator. Thanks!
+	
+	// I'm just forseeing some bugs lol 
 	@Override
 	public Iterator<E> inorderIterator() {
-		// TODO Auto-generated method stub
-		return null;
+		
+		return new InOrderIterator<>(root);
 	}
 
 	@Override
 	public Iterator<E> preorderIterator() {
-		// TODO Auto-generated method stub
-		return null;
+		return new PreOrderIterator<>(root);
 	}
 
 	@Override
 	public Iterator<E> postorderIterator() {
-		// TODO Auto-generated method stub
-		return null;
+		return new PostOrderIterator<>(root);
 	}
 	
 }
