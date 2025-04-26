@@ -1,11 +1,13 @@
 package implementations;
 
+import java.io.Serializable;
+
 import utilities.BSTreeADT;
 
 import utilities.Iterator;
 
-public class BSTree<E extends Comparable<? super E>> implements BSTreeADT<E>
-{
+public class BSTree<E extends Comparable<? super E>> implements BSTreeADT<E>, Serializable {
+    private static final long serialVersionUID = 1L;
 	
 
 	private BSTreeNode<E> root;
@@ -53,11 +55,7 @@ public class BSTree<E extends Comparable<? super E>> implements BSTreeADT<E>
 
 	@Override
 	public boolean isEmpty() {
-		if (root == null) {
-			return true;
-		}
-		
-		return false;
+	    return size == 0;
 	}	
 
 	@Override

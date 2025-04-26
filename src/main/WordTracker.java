@@ -6,9 +6,11 @@ import implementations.*;
 import utilities.*;
 
 public class WordTracker {
+    private static final String REPOSITORY_FILE = "repository.ser";
 
     // Frequency class that tracks word occurrences and related data
-    public static class Frequency implements Comparable<Frequency> {
+    public static class Frequency implements Comparable<Frequency>, Serializable {
+        private static final long serialVersionUID = 1L;  // Required for serialization
         private final String word;
         private final Map<String, Set<Integer>> occurrences;
 
@@ -59,6 +61,28 @@ public class WordTracker {
         }
     }
 
+    // Load the word tree from serialized file if it exists
+    @SuppressWarnings("unchecked")
+    private static BSTree<Frequency> loadRepository() {
+        File file = new File(REPOSITORY_FILE);
+        if (!file.exists()) {
+            return new BSTree<>();
+        }
+        
+        // Delete the old incompatible file
+        file.delete();
+        return new BSTree<>();
+    }
+
+    // Save the word tree to serialized file
+    private static void saveRepository(BSTree<Frequency> wordTree) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(REPOSITORY_FILE))) {
+            oos.writeObject(wordTree);
+        } catch (IOException e) {
+            System.err.println("Error saving repository: " + e.getMessage());
+        }
+    }
+
     // The main method to process text files and track word occurrences
     public static void main(String[] args) {
         if (args.length < 1) {
@@ -79,11 +103,15 @@ public class WordTracker {
             }
         }
 
-        // Tree to store Frequencies
-        BSTree<Frequency> wordTree = new BSTree<>();
+        // Load existing repository or create new tree
+        BSTree<Frequency> wordTree = loadRepository();
 
         // Read the input file and process each word
-        try (BufferedReader reader = new BufferedReader(new FileReader(inputFilePath))) {
+        File inputFile = new File("res/" + inputFilePath);  // Relative to project root
+        if (!inputFile.exists()) {
+            inputFile = new File(inputFilePath);  // Try absolute path
+        }
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile))) {
             String line;
             int lineNumber = 1;
             while ((line = reader.readLine()) != null) {
@@ -98,12 +126,7 @@ public class WordTracker {
                             wordTree.add(occurrence);
                             existing = occurrence;
                         } else {
-                            existing = node.getElement(); // Assuming BSTreeNode has a getElement() method
-                        }
-
-                        if (existing == null) {
-                            wordTree.add(occurrence);
-                            existing = occurrence;
+                            existing = node.getElement();
                         }
                         existing.addOccurrence(inputFilePath, lineNumber);
                     }
@@ -115,11 +138,14 @@ public class WordTracker {
             return;
         }
 
-        // Determine which option to print
-        try (PrintWriter writer = outputFilePath != null ? new PrintWriter(new FileWriter(outputFilePath)) : new PrintWriter(System.out)) {
-            utilities.Iterator<Frequency> it = wordTree.inorderIterator();
-            writer.println("Displaying format " + printOption);
+        // Generate report
+        try (PrintWriter writer = outputFilePath != null ? 
+                new PrintWriter(new FileWriter(outputFilePath)) : new PrintWriter(System.out)) {
             
+            writer.println("Displaying format " + printOption);
+            writer.println("-----------------------------");
+            
+            utilities.Iterator<Frequency> it = wordTree.inorderIterator();
             while (it.hasNext()) {
                 Frequency word = it.next();
                 Map<String, Set<Integer>> occurrences = word.getOccurrences();
@@ -128,19 +154,24 @@ public class WordTracker {
                 
                 if (printOption.equals("-pf")) {
                     // Print just the files
-                    writer.println("found in file: " + occurrences.keySet());
+                    writer.println("Found in files: " + String.join(", ", occurrences.keySet()));
                 } 
                 else if (printOption.equals("-pl")) {
                     // Print files with line numbers
                     for (Map.Entry<String, Set<Integer>> entry : occurrences.entrySet()) {
-                        writer.println("found in file: " + entry.getKey() + " on lines: " + entry.getValue());
+                        writer.println("File: " + entry.getKey() + 
+                                      ", Lines: " + entry.getValue().toString()
+                                          .replace("[", "").replace("]", ""));
                     }
                 } 
                 else if (printOption.equals("-po")) {
                     // Print files, lines, and frequency
                     writer.println("Total occurrences: " + word.getFrequency());
                     for (Map.Entry<String, Set<Integer>> entry : occurrences.entrySet()) {
-                        writer.println("found in file: " + entry.getKey() + " on lines: " + entry.getValue());
+                        writer.println("File: " + entry.getKey() + 
+                                      ", Lines: " + entry.getValue().toString()
+                                          .replace("[", "").replace("]", "") + 
+                                      ", Count: " + entry.getValue().size());
                     }
                 }
                 
@@ -149,5 +180,8 @@ public class WordTracker {
         } catch (IOException e) {
             System.out.println("Error writing to file: " + e.getMessage());
         }
+
+        // Save the updated repository
+        saveRepository(wordTree);
     }
 }
